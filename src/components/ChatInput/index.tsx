@@ -2,15 +2,24 @@
 
 import { useState } from "react";
 import Button from "@/components/Button";
+import axios from "axios";
 
 export default function ChatInput() {
   const [message, setMessage] = useState("");
 
-  const handleSend = () => {
-    if (message.trim() !== "") {
-      console.log("Sending message:", message);
-      setMessage("");
+  const handleSend = async () => {
+    console.log("prepreclient", message.trim() !== "");
+    if (!message.trim()) return;
+    console.log("preclient", message);
+    try {
+      const { data } = await axios.post("/api/chat", {
+        message,
+      });
+      console.log("AI Response:", data);
+    } catch (error) {
+      console.error("Error sending message:", error);
     }
+    setMessage("");
   };
 
   return (
