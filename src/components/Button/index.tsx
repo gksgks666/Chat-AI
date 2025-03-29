@@ -4,18 +4,18 @@ interface Props extends ComponentProps<"button"> {
   variant?: "primary" | "secondary";
   size?: "small" | "medium" | "large";
   className?: string;
-  onClick?: () => void;
+  // onClick?: () => void;
   children: ReactNode;
 }
 
 export default function Button({
   className,
-  onClick,
+  //onClick,
   children,
   ...props
 }: Props) {
   return (
-    <button className={className} onClick={onClick} {...props}>
+    <button className={className} {...props}>
       {children}
     </button>
   );
