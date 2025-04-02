@@ -1,15 +1,108 @@
+import { GoogleGenAI } from "@google/genai";
 import { NextRequest, NextResponse } from "next/server";
-import axios from "axios";
 
-interface ChatRequest {
-  message: string;
+interface MessagePart {
+  text: string;
 }
+
+interface MessageHistory {
+  role: "user" | "model";
+  parts: MessagePart[];
+}
+
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const historyMessage: MessageHistory[] = [];
 
 export async function POST(req: NextRequest) {
   try {
-    const { message }: ChatRequest = await req.json();
+    const { message } = await req.json();
+    historyMessage.push({
+      role: "user",
+      parts: [{ text: message }],
+    });
     console.log("nextpremessage");
-    const { data } = await axios.post(
+
+    const chat = ai.chats.create({
+      model: "gemini-2.0-flash",
+      history: historyMessage,
+    });
+
+    const stream = await chat.sendMessageStream({ message });
+
+    //SSE 응답 설정
+    const encoder = new TextEncoder();
+    const readableStream = new ReadableStream({
+      async start(controller) {
+        let responseText = "";
+        for await (const chunk of stream) {
+          responseText += chunk.text;
+          if (chunk.text) {
+            for (const char of chunk.text) {
+              controller.enqueue(encoder.encode(`data: ${char}\n\n`));
+              await new Promise((res) => setTimeout(res, 50));
+            }
+          }
+        }
+        historyMessage.push({
+          role: "model",
+          parts: [{ text: responseText }],
+        });
+        controller.close();
+      },
+    });
+
+    console.log("nextresponse");
+    return new Response(readableStream, {
+      headers: {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        Connection: "keep-alive",
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching AI response:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch AI response" },
+      { status: 500 }
+    );
+  }
+}
+
+/* async function main() {
+  const chat = ai.chats.create({
+    model: "gemini-2.0-flash",
+    history: [
+      {
+        role: "user",
+        parts: [{ text: "Hello" }],
+      },
+      {
+        role: "model",
+        parts: [{ text: "Great to meet you. What would you like to know?" }],
+      },
+    ],
+  });
+
+  const stream1 = await chat.sendMessageStream({
+    message: "I have 2 dogs in my house.",
+  });
+  for await (const chunk of stream1) {
+    console.log(chunk.text);
+    console.log("_".repeat(80));
+  }
+
+  const stream2 = await chat.sendMessageStream({
+    message: "How many paws are in my house?",
+  });
+  for await (const chunk of stream2) {
+    console.log(chunk.text);
+    console.log("_".repeat(80));
+  }
+}
+
+await main(); */
+
+/* const { data } = await axios.post(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
       {
         contents: [
@@ -22,18 +115,7 @@ export async function POST(req: NextRequest) {
         headers: { "Content-Type": "application/json" },
         responseType: "stream",
       }
-    );
-    console.log("nextresponse", data);
-    return NextResponse.json({ response: data });
-    //return NextResponse.json({ response: data.choices[0].message.content });
-  } catch (error) {
-    console.error("Error fetching AI response:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch AI response" },
-      { status: 500 }
-    );
-  }
-}
+    ); */
 
 /* curl "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=$YOUR_API_KEY" \
   -H 'Content-Type: application/json' \
@@ -49,57 +131,3 @@ export async function POST(req: NextRequest) {
       }
     ]
   }' */
-
-/* const {
-    GoogleGenerativeAI,
-    HarmCategory,
-    HarmBlockThreshold,
-  } = require("@google/generative-ai");
-  const fs = require("node:fs");
-  const mime = require("mime-types");
-  
-  const apiKey = process.env.GEMINI_API_KEY;
-  const genAI = new GoogleGenerativeAI(apiKey);
-  
-  const model = genAI.getGenerativeModel({
-    model: "gemini-2.0-flash",
-  });
-  
-  const generationConfig = {
-    temperature: 1,
-    topP: 0.95,
-    topK: 40,
-    maxOutputTokens: 8192,
-    responseModalities: [
-    ],
-    responseMimeType: "text/plain",
-  };
-  
-  async function run() {
-    const chatSession = model.startChat({
-      generationConfig,
-      history: [
-      ],
-    });
-  
-    const result = await chatSession.sendMessage("INSERT_INPUT_HERE");
-    // TODO: Following code needs to be updated for client-side apps.
-    const candidates = result.response.candidates;
-    for(let candidate_index = 0; candidate_index < candidates.length; candidate_index++) {
-      for(let part_index = 0; part_index < candidates[candidate_index].content.parts.length; part_index++) {
-        const part = candidates[candidate_index].content.parts[part_index];
-        if(part.inlineData) {
-          try {
-            const filename = `output_${candidate_index}_${part_index}.${mime.extension(part.inlineData.mimeType)}`;
-            fs.writeFileSync(filename, Buffer.from(part.inlineData.data, 'base64'));
-            console.log(`Output written to: ${filename}`);
-          } catch (err) {
-            console.error(err);
-          }
-        }
-      }
-    }
-    console.log(result.response.text());
-  }
-  
-  run(); */
