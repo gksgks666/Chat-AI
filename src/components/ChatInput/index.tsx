@@ -2,24 +2,48 @@
 
 import { useState } from "react";
 import Button from "@/components/Button";
-import axios from "axios";
+import { NativeEventSource, EventSourcePolyfill } from 'event-source-polyfill';
 
 export default function ChatInput() {
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState<string>("");
+  const [messages, setMessages] = useState({role: "", text:""});
 
   const handleSend = async () => {
     console.log("prepreclient", message.trim() !== "");
     if (!message.trim()) return;
     console.log("preclient", message);
-    try {
-      const { data } = await axios.post("/api/chat", {
-        message,
-      });
-      console.log("AI Response:", data);
-    } catch (error) {
-      console.error("Error sending message:", error);
-    }
-    setMessage("");
+    const EventSource = NativeEventSource || EventSourcePolyfill;
+    const eventSource = new EventSource("/api/chat", {
+      headers: { "Content-Type": "application/json" },
+      method: "POST",
+      body: JSON.stringify({ message }),
+    });
+    console.log("AI Response");
+
+    let aiMessage = "";
+    eventSource.onmessage = (event) => {
+      aiMessage += event.data; // 한 글자씩 추가
+      setMessages((prev) => [
+        ...prev.slice(0, -1),
+        { role: "ai", text: aiMessage },
+      ]);
+    };
+
+    eventSource.onerror = (err) => { // 오류 시 처리
+      console.error("SSE Error:", err);
+      eventSource.close();
+      //setIsLoading(false);
+    };
+
+    eventSource.onopen = () => { // sse 연결 성공 시 처리
+      setMessages((prev) => [...prev, { role: "ai", text: "" }]); // AI 메시지 추가
+    };
+
+    eventSource.addEventListener("end", () => { //sse 종료 시 처리
+      eventSource.close();
+      //setIsLoading(false);
+    });
+  };
   };
 
   return (
