@@ -1,6 +1,32 @@
-import Image from "next/image";
+//import Image from "next/image";
+import ChatInput from "@/components/ChatInput";
+import ChatContent from "@/components/ChatContent";
 
 export default function Home() {
+  // <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20"
+  //  >
+  //</div>
+  return (
+    <main className="flex flex-col items-center min-h-screen">
+      <header className="flex items-center justify-between px-4 md:px-6 py-3 bg-white shadow-md w-full sticky top-0">
+        <h1 className="text-xl font-bold text-gray-800">Gemini2.0 flash AI</h1>
+        <button className="px-4 py-2 text-sm font-medium text-white bg-[#B8E986] rounded-lg hover:bg-[#A3D375] transition cursor-pointer">
+          새 채팅
+        </button>
+      </header>
+
+      <ChatContent />
+      <div className="w-full flex flex-col items-center sticky bottom-0">
+        <ChatInput />
+        <footer className="text-gray items-center">
+          AI는 거짓말을 할 수 있습니다.
+        </footer>
+      </div>
+    </main>
+  );
+}
+
+/* export default function Home() {
   return (
     <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
       <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
@@ -16,7 +42,7 @@ export default function Home() {
           <li className="mb-2 tracking-[-.01em]">
             Get started by editing{" "}
             <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
+              src/app/page.tsx gg
             </code>
             .
           </li>
@@ -98,6 +124,23 @@ export default function Home() {
           Go to nextjs.org →
         </a>
       </footer>
+      <div className="bg-blue-500 sm:bg-green-500 md:bg-yellow-500 lg:bg-red-500 xl:bg-purple-500">
+        반응형 배경색 변경1
+      </div>
+      <div className="bg-green-100 p-4 sm:p-6 md:p-8 lg:p-12">
+        패딩 크기 변경됨
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="bg-gray-200 p-4">Box 1</div>
+        <div className="bg-gray-300 p-4">Box 2</div>
+        <div className="bg-gray-400 p-4">Box 3</div>
+        <div className="bg-gray-500 p-4">Box 4</div>
+      </div>
+
+      <div className="flex flex-col sm:flex-row sm:gap-4">
+        <div className="bg-blue-200 p-4 w-full sm:w-1/2">Left</div>
+        <div className="bg-red-200 p-4 w-full sm:w-1/2">Right</div>
+      </div>
     </div>
   );
-}
+} */
