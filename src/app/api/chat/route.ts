@@ -13,9 +13,15 @@ interface MessageHistory {
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 const historyMessage: MessageHistory[] = [];
 
-export async function POST(req: NextRequest) {
+export async function GET(req: NextRequest) {
   try {
-    const { message } = await req.json();
+    const { searchParams } = new URL(req.url);
+    const message: string | null = searchParams.get("message");
+
+    if (!message) {
+      return new Response("No message provided", { status: 400 });
+    }
+
     historyMessage.push({
       role: "user",
       parts: [{ text: message }],
