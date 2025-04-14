@@ -2,26 +2,35 @@
 
 import { useState } from "react";
 import Button from "@/components/Button";
-import { NativeEventSource, EventSourcePolyfill } from 'event-source-polyfill';
+import { EventSourcePolyfill } from "event-source-polyfill";
 
 export default function ChatInput() {
   const [message, setMessage] = useState<string>("");
-  const [messages, setMessages] = useState({role: "", text:""});
+  const [messages, setMessages] = useState<{ role: string; text: string }[]>(
+    []
+  );
 
   const handleSend = async () => {
     console.log("prepreclient", message.trim() !== "");
     if (!message.trim()) return;
+    setMessages((prev) => [...prev, { role: "user", text: message }]);
     console.log("preclient", message);
-    const EventSource = NativeEventSource || EventSourcePolyfill;
-    const eventSource = new EventSource("/api/chat", {
-      headers: { "Content-Type": "application/json" },
-      method: "POST",
-      body: JSON.stringify({ message }),
-    });
+    const eventSource = new EventSourcePolyfill(
+      `/api/chat?message=${encodeURIComponent(message)}`
+    );
+    setMessage("");
     console.log("AI Response");
 
     let aiMessage = "";
+
+    eventSource.onopen = () => {
+      // sse 연결 성공 시 처리
+      console.log("onopen");
+      setMessages((prev) => [...prev, { role: "ai", text: "" }]);
+    };
+
     eventSource.onmessage = (event) => {
+      console.log("onmessage", event);
       aiMessage += event.data; // 한 글자씩 추가
       setMessages((prev) => [
         ...prev.slice(0, -1),
@@ -29,21 +38,19 @@ export default function ChatInput() {
       ]);
     };
 
-    eventSource.onerror = (err) => { // 오류 시 처리
+    eventSource.addEventListener("end", () => {
+      //sse 종료 시 처리
+      console.log("end");
+      eventSource.close();
+      //setIsLoading(false);
+    });
+
+    eventSource.onerror = (err) => {
+      // 오류 시 처리
       console.error("SSE Error:", err);
       eventSource.close();
       //setIsLoading(false);
     };
-
-    eventSource.onopen = () => { // sse 연결 성공 시 처리
-      setMessages((prev) => [...prev, { role: "ai", text: "" }]); // AI 메시지 추가
-    };
-
-    eventSource.addEventListener("end", () => { //sse 종료 시 처리
-      eventSource.close();
-      //setIsLoading(false);
-    });
-  };
   };
 
   return (
