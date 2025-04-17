@@ -1,34 +1,30 @@
 import { create } from "zustand";
 
-type Message = {
+interface Message {
   role: "user" | "ai";
   text: string;
-};
+}
 
-type ChatStore = {
+interface ChatState {
   messages: Message[];
   isLoading: boolean;
-  aiMessageBuffer: string;
-  setMessages: (messages: Message[]) => void;
   addMessage: (message: Message) => void;
-  updateLastAiMessage: (text: string) => void;
-  setLoading: (isLoading: boolean) => void;
-  clearBuffer: () => void;
-};
+  updateLastMessage: (text: string) => void;
+  setLoading: (loading: boolean) => void;
+  clearMessages: () => void;
+}
 
-export const useChatStore = create<ChatStore>((set) => ({
+export const useChatStore = create<ChatState>((set) => ({
   messages: [],
   isLoading: false,
-  aiMessageBuffer: "",
-  setMessages: (messages) => set({ messages }),
   addMessage: (message) =>
     set((state) => ({ messages: [...state.messages, message] })),
-  updateLastAiMessage: (text) =>
+  updateLastMessage: (text) =>
     set((state) => {
       const updated = [...state.messages];
-      updated[updated.length - 1] = { role: "ai", text };
-      return { messages: updated, aiMessageBuffer: text };
+      updated[updated.length - 1] = { ...updated[updated.length - 1], text };
+      return { messages: updated };
     }),
-  setLoading: (isLoading) => set({ isLoading }),
-  clearBuffer: () => set({ aiMessageBuffer: "" }),
+  setLoading: (loading) => set({ isLoading: loading }),
+  clearMessages: () => set({ messages: [] }),
 }));
