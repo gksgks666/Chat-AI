@@ -2,55 +2,19 @@
 
 import { useState } from "react";
 import Button from "@/components/Button";
-import { EventSourcePolyfill } from "event-source-polyfill";
+import { useSSE } from "@/utils/useSSE";
 
 export default function ChatInput() {
-  const [message, setMessage] = useState<string>("");
-  const [messages, setMessages] = useState<{ role: string; text: string }[]>(
-    []
-  );
+  const [input, setInput] = useState("");
+  const { sendMessage } = useSSE();
 
-  const handleSend = async () => {
-    console.log("prepreclient", message.trim() !== "");
-    if (!message.trim()) return;
-    setMessages((prev) => [...prev, { role: "user", text: message }]);
-    console.log("preclient", message);
-    const eventSource = new EventSourcePolyfill(
-      `/api/chat?message=${encodeURIComponent(message)}`
-    );
-    setMessage("");
-    console.log("AI Response");
-
-    let aiMessage = "";
-
-    eventSource.onopen = () => {
-      // sse 연결 성공 시 처리
-      console.log("onopen");
-      setMessages((prev) => [...prev, { role: "ai", text: "" }]);
-    };
-
-    eventSource.onmessage = (event) => {
-      console.log("onmessage", event);
-      aiMessage += event.data; // 한 글자씩 추가
-      setMessages((prev) => [
-        ...prev.slice(0, -1),
-        { role: "ai", text: aiMessage },
-      ]);
-    };
-
-    eventSource.addEventListener("end", () => {
-      //sse 종료 시 처리
-      console.log("end");
-      eventSource.close();
-      //setIsLoading(false);
-    });
-
-    eventSource.onerror = (err) => {
-      // 오류 시 처리
-      console.error("SSE Error:", err);
-      eventSource.close();
-      //setIsLoading(false);
-    };
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log("prepreclient", input.trim() !== "");
+    if (!input.trim()) return;
+    console.log("preclient", input);
+    sendMessage(input);
+    setInput("");
   };
 
   return (
@@ -59,19 +23,15 @@ export default function ChatInput() {
         <textarea
           className="block h-20 w-full resize-none border-0 focus:ring-0 focus:border-transparent outline-none"
           placeholder="대화 내용을 입력해 주세요."
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          onKeyDown={(e) =>
-            e.key === "Enter" &&
-            !e.shiftKey &&
-            (e.preventDefault(), handleSend())
-          }
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSubmit(e)}
         />
       </div>
 
       <Button
         className="px-4 py-2 mt-2 text-white bg-[#B8E986] hover:bg-[#A3D375] rounded-lg cursor-pointer"
-        onClick={handleSend}
+        onClick={handleSubmit}
       >
         전송
       </Button>
