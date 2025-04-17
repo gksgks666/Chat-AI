@@ -49,6 +49,7 @@ export async function GET(req: NextRequest) {
             }
           }
         }
+        controller.enqueue(encoder.encode(`event: end\ndata: done\n\n`));
         historyMessage.push({
           role: "model",
           parts: [{ text: responseText }],
