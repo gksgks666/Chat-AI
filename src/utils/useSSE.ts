@@ -1,5 +1,5 @@
 import { EventSourcePolyfill } from "event-source-polyfill";
-import { useChatStore } from "@/store/chatStore";
+import { useChatStore } from "@/stores/chatStore";
 
 export const useSSE = () => {
   const { addMessage, updateLastMessage, setLoading } = useChatStore.getState();
@@ -8,7 +8,6 @@ export const useSSE = () => {
     setLoading(true);
     addMessage({ role: "user", text: message });
     addMessage({ role: "ai", text: "" });
-
     const eventSource = new EventSourcePolyfill(
       `/api/chat?message=${encodeURIComponent(message)}`
     );
@@ -16,7 +15,7 @@ export const useSSE = () => {
     let aiResponse = "";
 
     eventSource.onmessage = (event) => {
-      aiResponse += event.data;
+      aiResponse += event.data; // 한 글자씩 추가
       updateLastMessage(aiResponse);
     };
 
