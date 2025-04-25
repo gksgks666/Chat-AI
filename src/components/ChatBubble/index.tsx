@@ -1,3 +1,8 @@
+import ReactMarkdown from "react-markdown";
+import rehypeHighlight from "rehype-highlight";
+import remarkGfm from "remark-gfm";
+import "highlight.js/styles/github.css";
+
 type Props = {
   role: "user" | "ai";
   text: string;
@@ -21,7 +26,13 @@ export default function ChatBubble({ role, text }: Props) {
     // ai의 응답
     <div className="flex justify-start w-full">
       <div className="prose prose-neutral dark:prose-invert text-base max-w-full whitespace-pre-wrap px-2 py-1">
-        {text}
+        <ReactMarkdown
+          rehypePlugins={[rehypeHighlight]}
+          remarkPlugins={[remarkGfm]}
+          className="markdown-content"
+        >
+          {text}
+        </ReactMarkdown>
       </div>
     </div>
   );
