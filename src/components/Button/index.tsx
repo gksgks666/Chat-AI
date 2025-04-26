@@ -14,7 +14,7 @@ export default function Button({
   size = "medium",
   ...props
 }: Props) {
-  const baseClass = "rounded-lg cursor-pointer";
+  const baseClass = "rounded-lg cursor-pointer transition-colors duration-200";
 
   const variantClasses = {
     primary: "bg-[#B8E986] hover:bg-[#A3D375] text-white",
@@ -28,7 +28,7 @@ export default function Button({
   };
 
   const disabledClass = props.disabled
-    ? "bg-gray-400 cursor-not-allowed hover:bg-gray-400"
+    ? "bg-gray-400 cursor-not-allowed hover:bg-gray-400 pointer-events-none"
     : "";
 
   const buttonClass = `${baseClass} ${variantClasses[variant]} ${
