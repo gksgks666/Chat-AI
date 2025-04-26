@@ -16,7 +16,7 @@ export default function Home() {
       </header>
 
       <ChatContent />
-      <div className="w-full flex flex-col items-center sticky bottom-0">
+      <div className="w-full flex flex-col items-center sticky bottom-0 bg-white">
         <ChatInput />
         <footer className="text-gray items-center">
           AI는 거짓말을 할 수 있습니다.
