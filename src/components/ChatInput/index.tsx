@@ -30,8 +30,13 @@ export default function ChatInput() {
       </div>
 
       <Button
-        className="px-4 py-2 mt-2 text-white bg-[#B8E986] hover:bg-[#A3D375] rounded-lg cursor-pointer"
+        className={`px-4 py-2 mt-2 text-white rounded-lg cursor-pointer ${
+          input
+            ? "bg-[#B8E986] hover:bg-[#A3D375]"
+            : "bg-gray-400 cursor-not-allowed"
+        }`}
         onClick={handleSubmit}
+        disabled={!input}
       >
         전송
       </Button>
