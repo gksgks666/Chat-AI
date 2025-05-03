@@ -10,9 +10,7 @@ export default function ChatInput() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("prepreclient", input.trim() !== "");
     if (!input.trim()) return;
-    console.log("preclient", input);
     sendMessage(input);
     setInput("");
   };
