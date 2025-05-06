@@ -15,6 +15,8 @@ export const useSSE = () => {
     let aiResponse = "";
 
     eventSource.onmessage = (event) => {
+      console.log("useSSE onmessage event", event.data);
+      setLoading(false);
       aiResponse += event.data; // 한 글자씩 추가
       updateLastMessage(aiResponse);
     };
@@ -26,7 +28,6 @@ export const useSSE = () => {
     };
 
     eventSource.addEventListener("end", () => {
-      setLoading(false);
       eventSource.close();
     });
   };
