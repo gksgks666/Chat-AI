@@ -23,7 +23,6 @@ export default function ChatContent() {
       {isLoading ? (
         <div className="text-center p-4">
           <div className="w-8 h-8 border-4 border-gray-300 border-t-blue-500 rounded-full animate-spin mx-auto"></div>
-          <p className="text-sm text-gray-500 mt-2">응답을 생성하는 중...</p>
         </div>
       ) : (
         messages.length > 0 && (
